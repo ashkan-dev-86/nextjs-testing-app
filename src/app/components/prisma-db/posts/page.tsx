@@ -11,7 +11,7 @@ export default async function Posts() {
       <ul className="border-t border-b border-gray/10 py-5 leading-8">
         {posts.map((post) => (
           <li key={post.id} className="flex items-center justify-between px-5">
-            <Link href={`/posts/${post.id}`}>{post.title}</Link>
+            <Link href={`/components/prisma-db/posts/${post.id}`}>{post.title}</Link>
           </li>
         ))}
       </ul>

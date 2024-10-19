@@ -1,8 +1,8 @@
-// import { IParams } from "@/app/models/params";
+import { IParams } from "@/app/models/params";
 import prisma from "@/lib/db";
 
-// export default async function Post(params: IParams) {
-export default async function Post({params}) {
+export default async function Post({params}: {params: IParams}) {
+  console.warn('Param id:', params.id);
   const post = await prisma.post.findUnique({
     where: {
       id: params.id,

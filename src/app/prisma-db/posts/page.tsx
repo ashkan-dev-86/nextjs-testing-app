@@ -1,5 +1,5 @@
 import prisma from "@/lib/db";
-import Link from "next/link";
+import Post from "../../components/post/post";
 
 export default async function Posts() {
   const posts = await prisma.post.findMany();
@@ -11,7 +11,7 @@ export default async function Posts() {
       <ul className="border-t border-b border-gray/10 py-5 leading-8">
         {posts.map((post) => (
           <li key={post.id} className="flex items-center justify-between px-5">
-            <Link href={`/components/prisma-db/posts/${post.id}`}>{post.title}</Link>
+            <Post post={post} />
           </li>
         ))}
       </ul>

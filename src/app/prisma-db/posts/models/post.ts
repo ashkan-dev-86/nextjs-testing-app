@@ -1,5 +1,5 @@
 export interface IPost {
-    id: string;
+    id?: string;
     title: string;
     content?: string;
     published: boolean | null;

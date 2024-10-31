@@ -10,6 +10,8 @@ export const create = async (post: IPostInsert): Promise<IPost> => {
             title: post.title,
             content: post.content
         }
+    }).catch((error) => {
+        return error;
     });
 
     return insertedPost;
@@ -23,4 +25,29 @@ export const update = async (post: FormData): Promise<void> => {
             content: post.get('content') as string
         }
     });
+}
+
+export const fetchEndWithPost = async (): Promise<IPost[]> => {
+    const posts: Promise<IPost[]> = prisma.post.findMany({
+        where: {
+            title: {
+                endsWith: "post",
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        select: {
+            id: true,
+            title: true,
+            published: true,
+        },
+    });
+
+    return posts;
+}
+
+export const getPostCount = async (): Promise<number> => {
+    const count: Promise<number> = prisma.post.count();
+    return count;
 }

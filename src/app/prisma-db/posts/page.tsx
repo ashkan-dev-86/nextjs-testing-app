@@ -1,25 +1,34 @@
-import prisma from "@/lib/db";
+'use client';
+
 import Post from "../../components/post/post";
 import { PostInsert } from "@/app/components/post-insert/post-insert";
+import { useMemo, useState } from "react";
+import { IPost } from "./models/post";
+import { fetchEndWithPost, getPostCount } from "./posts.repository";
 
-export default async function Posts() {
-  const posts = await prisma.post.findMany({
-    where: {
-      title: {
-        endsWith: 'post'
-      }
-    },
-    orderBy: {
-      createdAt: "desc"
-    },
-    select: {
-      id: true,
-      title: true,
-      published: true
-    }
+export default function Posts() {
+  const [posts, setPosts] = useState<IPost[]>([]);
+  const [postCount, setCount] = useState<number>(0);
+  const [newPost, setNewPost] = useState<IPost>({
+    content: "",
+    title: "post",
+    published: true,
   });
 
-  const postCount: number = await prisma.post.count();
+  useMemo(async (): Promise<void> => {
+    if (!!newPost) {
+      const posts = await fetchEndWithPost();
+
+      setPosts(posts);
+
+      const postCount: number = await getPostCount();
+      setCount(postCount);
+    }
+  }, [newPost]);
+
+  const postsUpdated = (post: IPost) => {
+    setNewPost(post);
+  };
 
   return (
     <main className="flex flex-col items-center gap-y-5 pt-24 text-center">
@@ -33,7 +42,7 @@ export default async function Posts() {
         ))}
       </ul>
 
-      <PostInsert></PostInsert>
+      <PostInsert postInserted={postsUpdated}></PostInsert>
     </main>
   );
 }

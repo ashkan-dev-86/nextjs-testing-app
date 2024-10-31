@@ -1,16 +1,18 @@
 import { IPost } from "@/app/prisma-db/posts/models/post";
 import { IPostInsert } from "@/app/prisma-db/posts/models/post-insert";
-import { create } from "@/app/prisma-db/posts/posts.repository";
+import { IPostInsertProps } from "@/app/prisma-db/posts/models/post-insert-props";
 import { PostSandbox } from "@/app/prisma-db/posts/posts.sandbox";
-import { FormEvent } from "react";
+import { useToast } from "../toast/toast.hook";
 
-export const PostInsert = () => {
-//   const insert = async (event: FormEvent<HTMLFormElement>): string | Promise<void> => {
+export const PostInsert = (props: IPostInsertProps) => {
+  const { showToast } = useToast();
+
   const insert = async (data: FormData): Promise<void> => {
-    const post : IPostInsert = {
+    const post: IPostInsert = {
       title: data.get("title") as string,
-      content: data.get("content") as string
+      content: data.get("content") as string,
     };
+
     const insertedPost: IPost = await PostSandbox.create(post);
     if (!!insertedPost) {
       const title = document.getElementById("title") as HTMLInputElement;
@@ -19,8 +21,12 @@ export const PostInsert = () => {
       const content = document.getElementById("content") as HTMLInputElement;
       content.value = "";
 
+      props.postInserted(insertedPost);
+
       return;
     }
+
+    showToast()
   };
 
   return (

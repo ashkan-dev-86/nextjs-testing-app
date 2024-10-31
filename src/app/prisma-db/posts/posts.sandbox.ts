@@ -3,13 +3,8 @@ import { IPostInsert } from "./models/post-insert";
 import { create } from "./posts.repository";
 
 export class PostSandbox {
-    public static async create(post: IPost): Promise<IPost> {
-        const postInsert: IPostInsert= {
-            title: post.title,
-            content: post.content as string
-        };
-
-        const insertedPost: IPost = await create(postInsert);
+    public static async create(post: IPostInsert): Promise<IPost> {
+        const insertedPost: IPost = await create(post);
         return insertedPost;
     }
 }

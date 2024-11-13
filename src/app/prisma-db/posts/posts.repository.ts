@@ -3,6 +3,7 @@
 import prisma from "@/lib/db"
 import { IPostInsert } from "./models/post-insert";
 import { IPost } from "./models/post";
+// import errorMiddleware from "@/app/components/error-boundary/error-middleware";
 
 export const create = async (post: IPostInsert): Promise<IPost> => {
     const insertedPost: IPost = await prisma.post.create({
@@ -10,9 +11,11 @@ export const create = async (post: IPostInsert): Promise<IPost> => {
             title: post.title,
             content: post.content
         }
-    }).catch((error) => {
-        return error;
     });
+    // .catch((error) => {
+    //     errorMiddleware(error);
+    //     return Promise.reject(error);
+    // });
 
     return insertedPost;
 }

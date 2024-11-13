@@ -1,21 +1,25 @@
+'use client';
+
 import React, { Component, ReactNode, ErrorInfo } from "react";
 import errorMiddleware from "./error-middleware";
-import { useToast } from "../toast/toast.hook";
+// import { useToast } from "../toast/toast.hook";
+import { ToastType } from "../toast/models/toast";
 
 interface IErrorBoundaryProps {
   children: ReactNode;
+  showToast: (message: string, type?: ToastType, duration?: number) => void;
 }
 
 interface IErrorBoundaryState {
   hasError: boolean;
-  error?: Error;
 }
 
 class ErrorBoundary extends Component<
   IErrorBoundaryProps,
   IErrorBoundaryState
 > {
-  private toast = useToast();
+  // private toast = useToast();
+
   constructor(props: IErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -26,16 +30,13 @@ class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    this.props.showToast(error.message, "error");
     errorMiddleware(error, errorInfo.componentStack as string);
-    this.setState({
-      ...this.state,
-      error,
-    });
   }
 
   render() {
     if (this.state.hasError) {
-      return this.toast.showToast((this.state.error?.message ?? 'Something went wrong'), );
+      return <h1>Something went wrong.</h1>;
     }
 
     return this.props.children;

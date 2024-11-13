@@ -2,16 +2,20 @@ import { IPost } from "@/app/prisma-db/posts/models/post";
 import { IPostInsert } from "@/app/prisma-db/posts/models/post-insert";
 import { IPostInsertProps } from "@/app/prisma-db/posts/models/post-insert-props";
 import { PostSandbox } from "@/app/prisma-db/posts/posts.sandbox";
-import { useToast } from "../toast/toast.hook";
+// import errorMiddleware from "../error-boundary/error-middleware";
 
 export const PostInsert = (props: IPostInsertProps) => {
-  const { showToast } = useToast();
-
   const insert = async (data: FormData): Promise<void> => {
     const post: IPostInsert = {
       title: data.get("title") as string,
       content: data.get("content") as string,
     };
+
+    throw new Error("This is a test error!");
+
+    // errorMiddleware({ name: "Error", message: "An error occurred" });
+
+    return;
 
     const insertedPost: IPost = await PostSandbox.create(post);
     if (!!insertedPost) {
@@ -22,11 +26,7 @@ export const PostInsert = (props: IPostInsertProps) => {
       content.value = "";
 
       props.postInserted(insertedPost);
-
-      return;
     }
-
-    showToast()
   };
 
   return (

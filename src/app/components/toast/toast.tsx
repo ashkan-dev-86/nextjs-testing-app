@@ -1,8 +1,10 @@
+'use client';
+
 import React, { useEffect } from 'react';
-import { useToast } from './toast.context';
+import { useToastContext } from './toast.context';
 
 const ToastContainer: React.FC = () => {
-  const { toasts, removeToast } = useToast();
+  const { toasts, removeToast } = useToastContext();
 
   useEffect(() => {
     toasts.forEach(toast => {

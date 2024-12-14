@@ -4,7 +4,7 @@ import { ToastProvider } from "./components/toast/toast.context";
 import ErrorBoundary from "./components/error-boundary/error-boundary";
 import { useToast } from "./components/toast/toast.hook";
 
-export default function Home() {
+export default function Home({ Component, pageProps }) {
   // return (
   //   <main className="flex-1 flex flex-col justify-center items-center">
   //     <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">Home Page</h1>
@@ -23,8 +23,9 @@ export default function Home() {
 
   return (
     <ToastProvider>
-      <ErrorBoundary showToast={showToast}>
-        <main className="flex-1 flex flex-col justify-center items-center">
+      {/* <ErrorBoundary showToast={showToast}> */}
+      <Component {...pageProps} />
+      {/* <main className="flex-1 flex flex-col justify-center items-center">
           <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">
             Home Page
           </h1>
@@ -36,8 +37,8 @@ export default function Home() {
           <Link href="/prisma-db/posts" className="underline">
             Posts
           </Link>
-        </main>
-      </ErrorBoundary>
+        </main> */}
+      {/* </ErrorBoundary> */}
     </ToastProvider>
   );
 

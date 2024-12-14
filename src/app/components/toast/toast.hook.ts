@@ -8,5 +8,5 @@ export const useToast = () => {
     addToast({ message, type, duration });
   };
 
-  return { showToast };
+  return showToast;
 };

@@ -1,10 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ToastProvider } from "./components/toast/toast.context";
-// import ToastContainer from "./components/toast/toast";
 import ErrorBoundary from "./components/error-boundary/error-boundary";
 import { useToast } from "./components/toast/toast.hook";
+import ToastContainer from "./components/toast/toast";
 
-export default function Home({ Component, pageProps }) {
+export default function Home() {
   // return (
   //   <main className="flex-1 flex flex-col justify-center items-center">
   //     <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">Home Page</h1>
@@ -24,9 +26,20 @@ export default function Home({ Component, pageProps }) {
   return (
     <ToastProvider>
       {/* <ErrorBoundary showToast={showToast}> */}
-      <Component {...pageProps} />
-      {/* <main className="flex-1 flex flex-col justify-center items-center">
-          <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">
+      <ToastContainer />
+
+      <main className="flex-1 flex flex-col justify-center items-center">
+        <button
+          style={{background: 'white', color: 'black'}}
+          onClick={() =>
+            showToast(
+              "This is an error message to show toast component",
+              "error"
+            )
+          }
+        >Press</button>
+
+        {/* <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">
             Home Page
           </h1>
 
@@ -36,8 +49,8 @@ export default function Home({ Component, pageProps }) {
 
           <Link href="/prisma-db/posts" className="underline">
             Posts
-          </Link>
-        </main> */}
+          </Link> */}
+      </main>
       {/* </ErrorBoundary> */}
     </ToastProvider>
   );

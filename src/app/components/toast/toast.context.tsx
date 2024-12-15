@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { IToast } from "./models/toast";
-import ToastContainer from "./toast";
 
 interface ToastContextType {
   addToast: (message: Omit<IToast, "id">) => void;
@@ -10,11 +9,13 @@ interface ToastContextType {
   toasts: IToast[];
 }
 
-const ToastContext = createContext<ToastContextType | undefined>(undefined);
+const ToastContext = createContext<ToastContextType>({
+  addToast: () => {},
+  removeToast: () => {},
+  toasts: [],
+});
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<IToast[]>([]);
 
   const addToast = useCallback((message: Omit<IToast, "id">) => {
@@ -29,14 +30,15 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ToastContext.Provider value={{ addToast, removeToast, toasts }}>
       {children}
-
-      <ToastContainer />
     </ToastContext.Provider>
   );
 };
 
 export const useToastContext = (): ToastContextType => {
   const context = useContext(ToastContext);
-  if (!context) throw new Error("useToastContext must be used within a ToastProvider");
+  if (!context) {
+    throw new Error("useToastContext must be used within a ToastProvider");
+  }
+
   return context;
 };

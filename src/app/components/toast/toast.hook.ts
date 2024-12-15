@@ -1,3 +1,5 @@
+'use client';
+
 import { ToastType } from './models/toast';
 import { useToastContext } from './toast.context';
 
@@ -8,5 +10,5 @@ export const useToast = () => {
     addToast({ message, type, duration });
   };
 
-  return showToast;
+  return { showToast };
 };

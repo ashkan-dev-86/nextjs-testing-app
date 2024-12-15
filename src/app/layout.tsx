@@ -29,8 +29,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
-        <Link className="pl-20 home-link" href={'/'}>Home</Link>
+        <Link className="pl-20 home-link" href={"/"}>
+          Home
+        </Link>
 
         {children}
       </body>

@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+// import React, { ReactNode } from "react";
 import React, { Component, ReactNode, ErrorInfo } from "react";
 import errorMiddleware from "./error-middleware";
 // import { useToast } from "../toast/toast.hook";
@@ -22,6 +23,7 @@ class ErrorBoundary extends Component<
 
   constructor(props: IErrorBoundaryProps) {
     super(props);
+
     this.state = { hasError: false };
   }
 
@@ -30,8 +32,9 @@ class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.props.showToast(error.message, "error");
     errorMiddleware(error, errorInfo.componentStack as string);
+    this.setState({ hasError: true });
+    this.props.showToast(error.message, "error");
   }
 
   render() {
@@ -44,3 +47,18 @@ class ErrorBoundary extends Component<
 }
 
 export default ErrorBoundary;
+
+// export default function Error({ error }) {
+//   const { showToast } = useToast();
+
+//   //  Customize the error message for the toast
+//   const errorMessage = error.message || "An unexpected error occurred.";
+//   showToast(errorMessage, "error");
+
+//   return (
+//     <div>
+//       <h1>Something went wrong!</h1>
+//       <p>An error occurred. Please try again later.</p>
+//     </div>
+//   );
+// }

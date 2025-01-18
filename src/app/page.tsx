@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+// import Link from "next/link";
 import { ToastProvider } from "./components/toast/toast.context";
-import ErrorBoundary from "./components/error-boundary/error-boundary";
+// import ErrorBoundary from "./components/error-boundary/error-boundary";
 import { useToast } from "./components/toast/toast.hook";
 import ToastContainer from "./components/toast/toast";
 

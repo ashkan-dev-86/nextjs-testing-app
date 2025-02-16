@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./layout.css";
 import Link from "next/link";
+import { ToastProvider } from "./components/toast/toast.context";
+import ToastContainer from "./components/toast/toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,11 +33,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Link className="pl-20 home-link" href={"/"}>
-          Home
-        </Link>
+        <ToastProvider>
+          <ToastContainer />
+          
+          <Link className="pl-20 home-link" href={"/"}>
+            Home
+          </Link>
 
-        {children}
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

@@ -9,11 +9,7 @@ interface ToastContextType {
   toasts: IToast[];
 }
 
-const ToastContext = createContext<ToastContextType>({
-  addToast: () => {},
-  removeToast: () => {},
-  toasts: [],
-});
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<IToast[]>([]);

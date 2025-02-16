@@ -7,13 +7,22 @@ import { useToast } from "./components/toast/toast.hook";
 export default function Home() {
   const { showToast } = useToast();
 
+  const triggerToast = () => {
+    showToast("This is an error message to show toast component", "error");
+  };
+
   return (
     <main className="flex-1 flex flex-col justify-center items-center">
       <button
-        style={{ background: "white", color: "black", marginTop: "15px" }}
-        onClick={() =>
-          showToast("This is an error message to show toast component", "error")
-        }
+        style={{
+          background: "white",
+          color: "black",
+          padding: "10px",
+          border: "1px solid black",
+          borderRadius: "5px",
+          margin: "10px",
+        }}
+        onClick={triggerToast}
       >
         Press
       </button>

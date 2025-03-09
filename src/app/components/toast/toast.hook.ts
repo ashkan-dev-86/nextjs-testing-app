@@ -1,7 +1,7 @@
 'use client';
 
 import { ToastType } from './models/toast';
-import { useToastContext } from './toast.context';
+import { useToastContext } from '@/contexts/toast.context';
 
 export const useToast = () => {
   const { addToast } = useToastContext();

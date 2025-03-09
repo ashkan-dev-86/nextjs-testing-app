@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { IToast } from "./models/toast";
-import ToastContainer from "./toast";
+import { IToast } from "../app/components/toast/models/toast";
+import ToastContainer from "../app/components/toast/toast";
 
 interface ToastContextType {
   addToast: (message: Omit<IToast, "id">) => void;

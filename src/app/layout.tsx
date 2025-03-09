@@ -3,8 +3,9 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./layout.css";
 import Link from "next/link";
-import { ToastProvider } from "./components/toast/toast.context";
-import ToastContainer from "./components/toast/toast";
+import { ToastProvider } from "@/contexts/toast.context";
+import { ErrorProvider } from "@/contexts/error-boundary";
+import ErrorMiddleware from "./components/error-boundary/error-middleware";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,13 +35,15 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ToastProvider>
-          <ToastContainer />
-          
-          <Link className="pl-20 home-link" href={"/"}>
-            Home
-          </Link>
+          <ErrorProvider>
+            <ErrorMiddleware>
+              <Link className="pl-20 home-link" href={"/"}>
+                Home
+              </Link>
 
-          {children}
+              {children}
+            </ErrorMiddleware>
+          </ErrorProvider>
         </ToastProvider>
       </body>
     </html>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { useToastContext } from "./toast.context";
+import { useToastContext } from "@/contexts/toast.context";
 import "./toast.scss";
 
 const ToastContainer: React.FC = () => {
@@ -48,7 +48,6 @@ const ToastContainer: React.FC = () => {
           }`}
         >
           {toast.message}
-          {/* <button onClick={() => toastDismissal(toast.id)}>✖</button> */}
         </div>
       ))}
     </div>

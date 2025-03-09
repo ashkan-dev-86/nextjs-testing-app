@@ -1,7 +1,6 @@
 "use client";
 
 // import Link from "next/link";
-// import ErrorBoundary from "./components/error-boundary/error-boundary";
 import { useToast } from "./components/toast/toast.hook";
 
 export default function Home() {

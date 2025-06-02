@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { IToast } from "./models/toast";
+import { IToast } from "../app/components/toast/models/toast";
+import ToastContainer from "../app/components/toast/toast";
 
 interface ToastContextType {
   addToast: (message: Omit<IToast, "id">) => void;
@@ -9,16 +10,14 @@ interface ToastContextType {
   toasts: IToast[];
 }
 
-const ToastContext = createContext<ToastContextType>({
-  addToast: () => {},
-  removeToast: () => {},
-  toasts: [],
-});
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   const [toasts, setToasts] = useState<IToast[]>([]);
 
   const addToast = useCallback((message: Omit<IToast, "id">) => {
+    console.log(`addToast: ${message.message}, ${message.type}, ${message.duration}`);
+
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prevToasts) => [...prevToasts, { ...message, id }]);
   }, []);
@@ -30,6 +29,8 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ToastContext.Provider value={{ addToast, removeToast, toasts }}>
       {children}
+
+      <ToastContainer />
     </ToastContext.Provider>
   );
 };

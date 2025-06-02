@@ -3,12 +3,15 @@ import localFont from "next/font/local";
 import "./globals.css";
 import "./layout.css";
 import Link from "next/link";
+import { ToastProvider } from "@/contexts/toast.context";
+import { ErrorProvider } from "@/contexts/error-boundary";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -25,17 +28,23 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // useGlobalErrorHandler();
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <Link className="pl-20 home-link" href={"/"}>
-          Home
-        </Link>
+        <ToastProvider>
+          <ErrorProvider>
+            <Link className="pl-20 home-link" href={"/"}>
+              Home
+            </Link>
 
-        {children}
+            {children}
+          </ErrorProvider>
+        </ToastProvider>
       </body>
     </html>
   );

@@ -5,13 +5,13 @@ import "./layout.css";
 import Link from "next/link";
 import { ToastProvider } from "@/contexts/toast.context";
 import { ErrorProvider } from "@/contexts/error-boundary";
-import ErrorMiddleware from "./components/error-boundary/error-middleware";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -28,6 +28,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // useGlobalErrorHandler();
+
   return (
     <html lang="en">
       <body
@@ -36,13 +38,11 @@ export default function RootLayout({
       >
         <ToastProvider>
           <ErrorProvider>
-            <ErrorMiddleware>
-              <Link className="pl-20 home-link" href={"/"}>
-                Home
-              </Link>
+            <Link className="pl-20 home-link" href={"/"}>
+              Home
+            </Link>
 
-              {children}
-            </ErrorMiddleware>
+            {children}
           </ErrorProvider>
         </ToastProvider>
       </body>

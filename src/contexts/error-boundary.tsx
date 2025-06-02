@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useCallback } from "react";
+import { createContext, useContext, useCallback, useEffect } from "react";
 import { useToast } from "../app/components/toast/toast.hook";
 
 type ErrorContextType = {
-  throwError: (error: Error | null) => void;
+  throwError: (error: Error | string) => void;
 };
 
 const ErrorContext = createContext<ErrorContextType | undefined>(undefined);
@@ -14,7 +14,7 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Function to handle errors and display them in a toast
   const throwError = useCallback(
-    (error: unknown) => {
+    (error: Error | string) => {
       let errorMessage = "An unexpected error occurred.";
 
       if (error instanceof Error) {
@@ -29,6 +29,39 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
     },
     [showToast]
   );
+
+  useEffect(() => {
+    // Handle unhandled promise rejections
+    const handleRejection = (event: PromiseRejectionEvent) => {
+      handleError(
+        event instanceof Error
+          ? event.reason
+          : new ErrorEvent(String(event.reason))
+      );
+
+      // Prevent the default browser behavior
+      event.preventDefault();
+    };
+
+    // Handle uncaught errors
+    const handleError = (event: ErrorEvent) => {
+      throwError(new Error(event.message));
+      // Prevent the default browser behavior
+      event.preventDefault();
+    };
+
+    window.addEventListener("unhandledrejection", handleRejection);
+    window.addEventListener("error", handleError);
+
+    return () => {
+      window.removeEventListener(
+        "unhandledrejection",
+        handleRejection
+      );
+
+      window.removeEventListener("error", handleError);
+    };
+  }, [throwError]);
 
   return (
     <ErrorContext.Provider value={{ throwError }}>

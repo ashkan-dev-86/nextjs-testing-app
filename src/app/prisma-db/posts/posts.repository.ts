@@ -3,6 +3,7 @@
 import prisma from "@/lib/db"
 import { IPostInsert } from "./models/post-insert";
 import { IPost } from "./models/post";
+import { cache } from "react";
 
 export const create = async (post: IPostInsert): Promise<IPost> => {
     const insertedPost: IPost = await prisma.post.create({
@@ -13,7 +14,7 @@ export const create = async (post: IPostInsert): Promise<IPost> => {
     });
 
     return insertedPost;
-}
+};
 
 export const update = async (post: FormData): Promise<void> => {
     await prisma.post.update({
@@ -23,9 +24,24 @@ export const update = async (post: FormData): Promise<void> => {
             content: post.get('content') as string
         }
     });
-}
+};
 
-export const fetchEndWithPost = async (): Promise<IPost[]> => {
+export const fetchAllPosts = cache(async (): Promise<IPost[]> => {
+    const posts: Promise<IPost[]> = prisma.post.findMany({
+        orderBy: {
+            createdAt: "desc",
+        },
+        select: {
+            id: true,
+            title: true,
+            published: true,
+        },
+    });
+
+    return posts;
+});
+
+export const fetchEndWithPost = cache(async (): Promise<IPost[]> => {
     const posts: Promise<IPost[]> = prisma.post.findMany({
         where: {
             title: {
@@ -43,9 +59,9 @@ export const fetchEndWithPost = async (): Promise<IPost[]> => {
     });
 
     return posts;
-}
+});
 
-export const getPostCount = async (): Promise<number> => {
+export const getPostCount = cache(async (): Promise<number> => {
     const count: Promise<number> = prisma.post.count();
     return count;
-}
+});

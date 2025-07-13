@@ -18,3 +18,10 @@ model Post {
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
+
+model Article {
+  id          String @id @default(cuid())
+  title       String
+  content     String
+  authorEmail String
+}

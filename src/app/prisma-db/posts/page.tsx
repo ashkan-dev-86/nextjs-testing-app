@@ -4,7 +4,7 @@ import Post from "../../components/post/post";
 import { PostInsert } from "@/app/components/post-insert/post-insert";
 import { useMemo, useState } from "react";
 import { IPost } from "./models/post";
-import { fetchEndWithPost, getPostCount } from "./posts.repository";
+import { fetchAllPosts, getPostCount } from "./posts.repository";
 
 export default function Posts() {
   const [posts, setPosts] = useState<IPost[]>([]);
@@ -17,7 +17,7 @@ export default function Posts() {
 
   useMemo(async (): Promise<void> => {
     if (!!newPost) {
-      const posts = await fetchEndWithPost();
+      const posts = await fetchAllPosts();
 
       setPosts(posts);
 

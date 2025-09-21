@@ -1,4 +1,5 @@
-import { NextAuthOptions, Session } from "next-auth";
+import NextAuth, { AuthOptions, NextAuthOptions, Session } from "next-auth";
+import NextAuthConfig from 'next-auth';
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -24,7 +25,7 @@ interface IArbitraryAuthOptions {
 
 type ArbitraryNextAuthOptions = Omit<NextAuthOptions, "callbacks" | "pages"> & IArbitraryAuthOptions;
 
-export const authOptions: ArbitraryNextAuthOptions = {
+const authOptions: ArbitraryNextAuthOptions = {
     adapter: PrismaAdapter(prisma),
 
     providers: [
@@ -121,4 +122,25 @@ export const authOptions: ArbitraryNextAuthOptions = {
     },
 
     secret: process.env.AUTH_SECRET
+};
+
+function transformToNextAuthOptions(arbitraryOptions: ArbitraryNextAuthOptions): NextAuthOptions {
+    const { callbacks, pages, ...restOptions } = arbitraryOptions;
+    
+    return {
+        ...restOptions,
+        callbacks: {...callbacks, ...authOptions.callbacks},
+        pages: {
+            signIn: pages.signIn,
+            signUp: pages.signUp,
+            error: pages.error,
+            // Add other NextAuth pages as needed
+        }
+    };
 }
+
+// const getAuthOptions : ArbitraryNextAuthOptions = transformToNextAuthOptions(authOptions);
+
+// export default getAuthOptions;
+
+export default NextAuth(authOptions);

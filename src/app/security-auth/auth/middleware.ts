@@ -1,1 +1,0 @@
-export { auth as middleware } from "@/app/security-auth/auth/auth"

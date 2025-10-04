@@ -1,146 +1,279 @@
-import NextAuth, { AuthOptions, NextAuthOptions, Session } from "next-auth";
-import NextAuthConfig from 'next-auth';
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
+import NextAuth, { DefaultSession, NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
+import GoogleProvider from "next-auth/providers/google";
+import { z } from "zod";
+import { AuthErrors } from "../enums/auth-errors.enum";
 import prisma from "@/lib/db";
-import { IUserClaim } from "../models/user";
-import { JWT } from "next-auth/jwt";
-import { IAuthSession } from "../models/session";
-import { loginSchema } from "../validations/auth";
+import { logger } from "../log/logger";
+import { Role } from '../enums/roles';
+import { compare } from "bcryptjs";
 
-interface IArbitraryAuthOptions {
-    callbacks: {
-        jwt({ token, user }: { token: JWT; user: IUserClaim }): Promise<JWT>;
-        authSession({ session, token }: { session: Session, token: JWT }): Promise<Session>;
-    },
-    pages: {
-        signIn: string;
-        signUp: string;
-        error: string;
+// Extend the built-in session types
+declare module "next-auth" {
+    interface Session {
+        user: {
+            id: string;
+            role: string;
+            email: string;
+            name: string;
+        } & DefaultSession["user"];
+    }
+
+    interface User {
+        id: string;
+        role: string;
+        email: string;
+        password: string;
+        name: string;
+        emailVerified: Date;
+        isActive: boolean;
     }
 }
 
-type ArbitraryNextAuthOptions = Omit<NextAuthOptions, "callbacks" | "pages"> & IArbitraryAuthOptions;
+declare module "next-auth/jwt" {
+    interface JWT {
+        id: string;
+        role: string;
+    }
+}
 
-const authOptions: ArbitraryNextAuthOptions = {
-    adapter: PrismaAdapter(prisma),
-
+export const authOptions: NextAuthOptions = {
     providers: [
+        CredentialsProvider({
+            name: "Credentials",
+            credentials: {
+                email: { label: "Email", type: "email" },
+                password: { label: "Password", type: "password" },
+            },
+            async authorize(credentials, req) {
+                if (!credentials?.email || !credentials?.password) {
+                    return null;
+                }
+
+                const user: User = await authenticateUser(credentials, req.headers?.["x-forwarded-for"] as string);
+
+                if (!!user) {
+                    return {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        role: user.role
+                    };
+                }
+
+                return null;
+            },
+        }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         }),
-
-        GitHubProvider({
-            clientId: process.env.GITHUB_CLIENT_ID!,
-            clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-        }),
-
-        CredentialsProvider({
-            name: "credentials",
-
-            credentials: {
-                email: { label: "Email", type: "email" },
-                password: { label: "Password", type: "password" }
-            },
-
-            async authorize(credentials: (Record<"email" | "password", string> | undefined)): Promise<IUserClaim> {
-                if (!credentials?.email || !credentials?.password) {
-                    throw new Error("Missing credentials");
-                }
-
-                const validation = loginSchema.safeParse(credentials);
-                if (!validation.success) {
-                    throw new Error("Invalid credentials format");
-                }
-
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email }
-                });
-
-                if (!user || !user.password) {
-                    throw new Error("Invalid credentials");
-                }
-
-                const isPasswordValid = await bcrypt.compare(
-                    credentials.password,
-                    user.password
-                );
-
-                if (!isPasswordValid) {
-                    throw new Error("Invalid credentials");
-                }
-
-                return {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role,
-                    emailVerified: user.emailVerified
-                }
-            }
-        })
     ],
+
+    callbacks: {
+        async jwt({ token, user, trigger, session }) {
+            // Initial sign in
+            if (user) {
+                token.id = user.id;
+                token.role = user.role;
+            }
+
+            // Handle session updates
+            if (trigger === "update" && session) {
+                token.role = session.role;
+            }
+
+            return token;
+        },
+
+        async session({ session, token }) {
+            // Add custom claims to session
+            if (session.user) {
+                session.user.id = token.id;
+                session.user.role = token.role;
+            }
+
+            return session;
+        },
+
+        async signIn({ user, account, profile }) {
+            // For OAuth providers, create/update user in database
+            if (account?.provider === "google") {
+                // Check if user exists in database
+                const existingUser: User | null = await getUserByEmail(user.email!);
+
+                if (!existingUser) {
+                    // Create new user with default role
+                    await createUser({
+                        email: user.email!,
+                        name: user.name!,
+                        role: "user", // default role
+                    });
+                }
+
+                // Attach role to user object
+                user.role = existingUser?.role || "user";
+            }
+
+            return true;
+        },
+    },
+
+    pages: {
+        signIn: "/auth/signin",
+        error: "/auth/error",
+    },
 
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
 
-    callbacks: {
-        async jwt({ token, user }: { token: JWT; user: IUserClaim }): Promise<JWT> {
-            if (user) {
-                token.role = (user as IUserClaim).role;
-            }
+    secret: process.env.AUTH_SECRET,
 
-            return token;
-        },
+    // Security headers
+    useSecureCookies: process.env.NODE_ENV === "production",
 
-        async authSession({ session, token }: { session: IAuthSession, token: JWT }): Promise<Session> {
-            if (token) {
-                session = {
-                    ...session,
-                    user: {
-                        ...session.user,
-                        id: token.sub!,
-                        role: token.role as string
-                    }
-                };
-            }
-
-            return session;
-        }
-    },
-
-    pages: {
-        signIn: "/auth/signin",
-        signUp: "/auth/signup",
-        error: "/auth/error"
-    },
-
-    secret: process.env.AUTH_SECRET
+    // Enable debug in development only
+    debug: process.env.NODE_ENV === "development"
 };
 
-function transformToNextAuthOptions(arbitraryOptions: ArbitraryNextAuthOptions): NextAuthOptions {
-    const { callbacks, pages, ...restOptions } = arbitraryOptions;
-    
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+
+// Mock functions - replace with actual database queries
+async function authenticateUser(credentials: Record<"email" | "password", string>, ip: string): Promise<User> {
+    const validatedData = loginSchema.safeParse(credentials);
+    if (!validatedData.success) {
+        throw new Error(AuthErrors.INVALID_CREDENTIALS_FORMAT);
+    }
+
+    const { email, password } = validatedData.data;
+
+    // Rate limiting by email
+    const identifier = email.toLowerCase();
+    if (!checkRateLimit(identifier)) {
+        await logLoginAttempt('login', email, false, ip);
+        throw new Error(AuthErrors.TOO_MANY_ATTEMPTS);
+    }
+
+    const user: User = await getUserByEmail(email);
+    if (!user) {
+        // Use timing-safe comparison to prevent user enumeration
+        await compare(password, "$2a$10$dummyHashToPreventTimingAttacks");
+        await logLoginAttempt('login', email, false, ip);
+        throw new Error(AuthErrors.INVALID_CREDENTIALS);
+    }
+
+    if (!user.isActive) {
+        await logLoginAttempt('login', email, false, ip);
+        throw new Error(AuthErrors.ACCOUNT_DISABLED);
+    }
+
+    if (!user.emailVerified) {
+        throw new Error(AuthErrors.EMAIL_NOT_VERIFIED);
+    }
+
+    const isPasswordValid: boolean = await compare(password, user.password);
+    if (!isPasswordValid) {
+        await logLoginAttempt('login', email, false, ip);
+        throw new Error(AuthErrors.INVALID_CREDENTIALS);
+    }
+
+    await logLoginAttempt('login', email, true, ip);
+
+    loginAttempts.delete(identifier);
+
+    // Mock response
     return {
-        ...restOptions,
-        callbacks: {...callbacks, ...authOptions.callbacks},
-        pages: {
-            signIn: pages.signIn,
-            signUp: pages.signUp,
-            error: pages.error,
-            // Add other NextAuth pages as needed
-        }
+        id: "1",
+        email: email,
+        name: "Test User",
+        role: "admin",
+        password: "$2a$10$dummyHashToPreventTimingAttacks",
+        isActive: true,
+        emailVerified: user.emailVerified
     };
 }
 
-// const getAuthOptions : ArbitraryNextAuthOptions = transformToNextAuthOptions(authOptions);
+async function createUser(data: { email: string; name: string; role: string }) {
+    // TODO: Create user in database
+    return null;
+}
 
-// export default getAuthOptions;
+const loginSchema = z.object({
+    email: z.string().regex(
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        AuthErrors.INVALID_EMAIL
+    ),
+    password: z.string().min(8, AuthErrors.PASSWORD_TOO_SHORT),
+});
 
-export default NextAuth(authOptions);
+// Rate limiting storage (use Redis in production)
+const loginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+// Rate limiting helper
+function checkRateLimit(identifier: string): boolean {
+    const now = Date.now();
+    const attempt = loginAttempts.get(identifier);
+
+    if (!attempt || now > attempt.resetAt) {
+        loginAttempts.set(identifier, { count: 1, resetAt: now + 15 * 60 * 1000 }); // 15 min window
+        return true;
+    }
+
+    if (attempt.count >= 5) {
+        return false; // Max 5 attempts per 15 minutes
+    }
+
+    attempt.count++;
+    return true;
+}
+
+async function logLoginAttempt(
+    action: "login" | "logout" | "register" | "password_change" | "password_reset",
+    email: string,
+    success: boolean,
+    ip?: string
+): Promise<void> {
+    console.log({
+        email,
+        success,
+        ip,
+        timestamp: new Date(),
+    });
+
+    logger.logAuth(
+        action,
+        success,
+        {
+            email,
+            ip
+        }
+    );
+}
+
+async function getUserByEmail(email: string): Promise<User> {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    return {
+        id: user?.id,
+        role: !!user ? Role[user.role].toString() : '',
+        email: user?.email,
+        password: user?.password,
+        name: user?.name,
+        emailVerified: user?.emailVerified,
+        isActive: user?.isActive
+    } as User;
+
+    // For demo purposes:
+    //   return {
+    //     id: "1",
+    //     email: "user@example.com",
+    //     password: "$2a$10$...", // hashed password
+    //     name: "John Doe",
+    //     emailVerified: new Date(),
+    //     isActive: true,
+    //     role: "user",
+    //   };
+}

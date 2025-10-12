@@ -1,22 +1,27 @@
 import { z } from "zod";
+import { AuthErrors } from "../enums/auth-errors.enum";
 
 export const loginSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().regex(
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    AuthErrors.INVALID_EMAIL
+  ),
+  password: z.string().min(8, AuthErrors.PASSWORD_TOO_SHORT),
 });
 
 export const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.email("Invalid email address"),
+  name: z.string().min(2, ),
+  email: z.email(AuthErrors.INVALID_EMAIL),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 
-      "Password must contain at least one lowercase letter, one uppercase letter, and one number"
-    ),
+    .min(8, AuthErrors.PASSWORD_TOO_SHORT)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      
+    )
+    .regex(/[^A-Za-z0-9]/, AuthErrors.PASSWORD_SPECIAL_CHAR),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: AuthErrors.PASSWORD_MISMATCH,
   path: ["confirmPassword"]
 });
 

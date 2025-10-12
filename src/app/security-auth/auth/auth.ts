@@ -1,12 +1,13 @@
-import NextAuth, { DefaultSession, NextAuthOptions, User } from "next-auth";
+import { DefaultSession, NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { z } from "zod";
 import { AuthErrors } from "../enums/auth-errors.enum";
 import prisma from "@/lib/db";
 import { logger } from "../log/logger";
 import { Role } from '../enums/roles';
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
+import { loginSchema, registerSchema } from '../validations/auth';
+import { ICreateUserResult, IRegisterUser } from "../models/register-user.model";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -23,10 +24,10 @@ declare module "next-auth" {
         id: string;
         role: string;
         email: string;
-        password: string;
+        password?: string;
         name: string;
-        emailVerified: Date;
-        isActive: boolean;
+        emailVerified?: Date;
+        isActive?: boolean;
     }
 }
 
@@ -45,7 +46,7 @@ export const authOptions: NextAuthOptions = {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials, req) {
+            async authorize(credentials, req): Promise<User | null> {
                 if (!credentials?.email || !credentials?.password) {
                     return null;
                 }
@@ -96,20 +97,11 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
 
-        async signIn({ user, account, profile }) {
+        async signIn({ user, account }) {
             // For OAuth providers, create/update user in database
             if (account?.provider === "google") {
                 // Check if user exists in database
                 const existingUser: User | null = await getUserByEmail(user.email!);
-
-                if (!existingUser) {
-                    // Create new user with default role
-                    await createUser({
-                        email: user.email!,
-                        name: user.name!,
-                        role: "user", // default role
-                    });
-                }
 
                 // Attach role to user object
                 user.role = existingUser?.role || "user";
@@ -137,9 +129,6 @@ export const authOptions: NextAuthOptions = {
     // Enable debug in development only
     debug: process.env.NODE_ENV === "development"
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
 
 // Mock functions - replace with actual database queries
 async function authenticateUser(credentials: Record<"email" | "password", string>, ip: string): Promise<User> {
@@ -174,7 +163,7 @@ async function authenticateUser(credentials: Record<"email" | "password", string
         throw new Error(AuthErrors.EMAIL_NOT_VERIFIED);
     }
 
-    const isPasswordValid: boolean = await compare(password, user.password);
+    const isPasswordValid: boolean = await compare(password, (user.password || ""));
     if (!isPasswordValid) {
         await logLoginAttempt('login', email, false, ip);
         throw new Error(AuthErrors.INVALID_CREDENTIALS);
@@ -196,18 +185,42 @@ async function authenticateUser(credentials: Record<"email" | "password", string
     };
 }
 
-async function createUser(data: { email: string; name: string; role: string }) {
-    // TODO: Create user in database
-    return null;
-}
+export async function createUser(user: IRegisterUser): Promise<ICreateUserResult> {
+    const validatedData = registerSchema.parse(user);
+    const existingUser = await prisma.user.findUnique({
+        where: { email: validatedData.email.toLowerCase() },
+    });
 
-const loginSchema = z.object({
-    email: z.string().regex(
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        AuthErrors.INVALID_EMAIL
-    ),
-    password: z.string().min(8, AuthErrors.PASSWORD_TOO_SHORT),
-});
+    if (!!existingUser) {
+        logger.logAuth('register', false, { email: validatedData.email });
+
+        return {
+            success: false,
+            error: AuthErrors.EMAIL_EXISTS
+        };
+    }
+
+    const hashedPassword = await hash(validatedData.password, 10);
+    const newUser = await prisma.user.create({
+        data: {
+            email: validatedData.email.toLowerCase(),
+            name: validatedData.name,
+            password: hashedPassword,
+            role: user.role || Role.USER
+        }
+    });
+
+    logger.logAuth('register', true, { email: validatedData.email });
+
+    return {
+        success: true,
+        user: {
+            id: newUser.id,
+            email: newUser.email,
+            name: newUser.name
+        }
+    };
+}
 
 // Rate limiting storage (use Redis in production)
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();

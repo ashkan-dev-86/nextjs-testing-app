@@ -1,14 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createUser } from "../auth/auth";
+import { createUser } from "../auth";
 import {
   ICreateUserResult,
   IRegisterUser,
-} from "../models/register-user.model";
-import { AuthErrors } from "../enums/auth-errors.enum";
+} from "../../models/register-user.model";
+import { AuthErrors } from "../../enums/auth-errors.enum";
 import { useToast } from "@/app/components/toast/toast.hook";
-import { AuthMessages } from "../enums/auth-messages.enum";
+import { AuthMessages } from "../../enums/auth-messages.enum";
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -48,7 +48,7 @@ export default function RegisterForm() {
       showToast(AuthMessages.REGISTER_SUCCESS, "success");
 
       router.push("/home");
-    } catch (err) {
+    } catch (error: unknown) {
       throw new Error(AuthErrors.UNEXPECTED_ERROR);
     } finally {
       setLoading(false);

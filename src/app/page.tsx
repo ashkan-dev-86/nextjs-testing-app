@@ -14,6 +14,10 @@ export default function Home() {
       <Link href="/prisma-db/posts" className="underline">
         Posts
       </Link>
+
+      <Link href="/security-auth/auth/login" className="underline">
+        Signin
+      </Link>
     </main>
   );
 }

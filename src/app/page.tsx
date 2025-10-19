@@ -1,34 +1,49 @@
 "use client";
 
 import Link from "next/link";
-import { useShallowRouter } from "@/app/hooks/shallow-router";
+import { useState } from "react";
+import Article from "./security-auth/articles/article";
+import Posts from "./prisma-db/posts/page";
+import LoginForm from "./security-auth/auth/login/page";
+
+type ComponentType = "home" | "article" | "posts" | "signin";
 
 export default function Home() {
-  const { push } = useShallowRouter();
+  const [currentComponent, setCurrentComponent] =
+    useState<ComponentType>("home");
+
+  const renderComponent = () => {
+    switch (currentComponent) {
+      case "article":
+        return <Article />;
+      case "posts":
+        return <Posts />;
+      case "signin":
+        return <LoginForm />;
+    }
+  };
 
   return (
     <main className="flex-1 flex flex-col justify-center items-center">
       <h1 className="pt-24 txt-4xl font-medium mb-5 capitalize">Home Page</h1>
 
-      <button
-        type="button"
-        className="text-indigo-600 hover:text-indigo-700 font-medium text-white py-2 px-4 rounded-md bg-indigo-500 hover:bg-indigo-600 transition duration-300 ease-in-out"
-        onClick={() => push("/security-auth/articles/article")}
+      <Link
+        href="#"
+        className="underline"
+        onClick={() => setCurrentComponent("article")}
       >
         Article
-      </button>
+      </Link>
 
-      {/* <Link href="/article" className="underline">
-        Article
-      </Link> */}
-
-      <Link href="/prisma-db/posts" className="underline">
+      <Link href="#" className="underline">
         Posts
       </Link>
 
-      <Link href="/security-auth/auth/login" className="underline">
+      <Link href="#" className="underline">
         Signin
       </Link>
+
+      {renderComponent()}
     </main>
   );
 }

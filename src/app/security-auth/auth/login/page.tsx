@@ -7,6 +7,7 @@ import {
 } from "../../repositories/signin.repository";
 import { SignInResponse } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -187,6 +188,19 @@ export default function LoginForm() {
             Sign in with GitHub
           </button>
         </div>
+
+        <p className="text-center text-sm text-gray-600 mt-6">
+          Don&apos;t have an account?{" "}
+          <Link href="/security-auth/auth/registration">
+            <button
+              type="button"
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              onClick={() => alert("Sign up clicked")}
+            >
+              Sign up
+            </button>
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -1,0 +1,13 @@
+export enum AppError {
+    BAD_REQUEST = "BAD_REQUEST",
+    UNAUTHORIZED = "UNAUTHORIZED",
+    FORBIDDEN = "FORBIDDEN",
+    NOT_FOUND = "NOT_FOUND",
+    INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
+    SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
+    GATEWAY_TIMEOUT = "GATEWAY_TIMEOUT",
+    BAD_GATEWAY = "BAD_GATEWAY",
+    UNKNOWN_ERROR = "UNKNOWN_ERROR",
+    NAVIGATION_SKIP_ERROR = "useSkipLocationRouter must be used within InternalRouterProvider",
+    UNEXPECTED_ERROR = "An unexpected error occurred",
+}

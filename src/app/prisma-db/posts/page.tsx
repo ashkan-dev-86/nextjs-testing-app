@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 import Post from "../../components/post/post";
 import { PostInsert } from "@/app/components/post-insert/post-insert";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { IPost } from "./models/post";
 import { fetchAllPosts, getPostCount } from "./posts.repository";
 
@@ -15,15 +15,19 @@ export default function Posts() {
     published: true,
   });
 
-  useMemo(async (): Promise<void> => {
-    if (!!newPost) {
-      const posts = await fetchAllPosts();
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!!newPost) {
+        const posts = await fetchAllPosts();
 
-      setPosts(posts);
+        setPosts(posts);
 
-      const postCount: number = await getPostCount();
-      setCount(postCount);
-    }
+        const postCount: number = await getPostCount();
+        setCount(postCount);
+      }
+    };
+
+    fetchPosts();
   }, [newPost]);
 
   const postsUpdated = (post: IPost) => {

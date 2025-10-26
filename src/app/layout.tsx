@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import "./layout.css";
-import Link from "next/link";
 import { ToastProvider } from "@/contexts/toast.context";
 import { ErrorProvider } from "@/contexts/error-boundary";
+import { InternalRouterProvider } from "@/contexts/router.context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,8 +28,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // useGlobalErrorHandler();
-
   return (
     <html lang="en">
       <body
@@ -38,11 +36,9 @@ export default function RootLayout({
       >
         <ToastProvider>
           <ErrorProvider>
-            <Link className="pl-20 home-link" href={"/"}>
-              Home
-            </Link>
-
-            {children}
+            <InternalRouterProvider initialPath="/">
+              {children}
+            </InternalRouterProvider>
           </ErrorProvider>
         </ToastProvider>
       </body>

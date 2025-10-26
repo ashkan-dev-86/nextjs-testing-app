@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useCallback, useEffect } from "react";
 import { useToast } from "../app/components/toast/toast.hook";
+import { AppError } from "@/app/enums/app-errors.enum";
 
 type ErrorContextType = {
   throwError: (error: Error | string) => void;
@@ -15,7 +16,7 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
   // Function to handle errors and display them in a toast
   const throwError = useCallback(
     (error: Error | string) => {
-      let errorMessage = "An unexpected error occurred.";
+      let errorMessage = "";
 
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -23,6 +24,7 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
         errorMessage = error;
       }
 
+      errorMessage = !errorMessage ? AppError.UNEXPECTED_ERROR : errorMessage;
       showToast(errorMessage, "error"); // Display error in toast
 
       console.error(error); // Log the error for debugging
@@ -54,10 +56,7 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
     window.addEventListener("error", handleError);
 
     return () => {
-      window.removeEventListener(
-        "unhandledrejection",
-        handleRejection
-      );
+      window.removeEventListener("unhandledrejection", handleRejection);
 
       window.removeEventListener("error", handleError);
     };

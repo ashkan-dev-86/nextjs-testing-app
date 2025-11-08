@@ -1,3 +1,5 @@
+'use server';
+
 import { IParams } from "@/app/models/params";
 import prisma from "@/lib/db";
 

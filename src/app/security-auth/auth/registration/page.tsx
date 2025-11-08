@@ -57,77 +57,106 @@ export default function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium">
-          Name
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="mt-1 block w-full rounded border p-2"
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-md">
+        <h2 className="text-center text-3xl font-bold text-gray-900">
+          Create your account
+        </h2>
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          required
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="mt-1 block w-full rounded border p-2"
-        />
-      </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-900"
+            >
+              Name
+            </label>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium">
-          Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          required
-          value={formData.password}
-          onChange={(e) =>
-            setFormData({ ...formData, password: e.target.value })
-          }
-          className="mt-1 block w-full rounded border p-2"
-        />
-        <p className="text-xs text-gray-500 mt-1">
-          Min 8 characters, with uppercase, lowercase, number, and special
-          character
-        </p>
-      </div>
+            <input
+              id="name"
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="mt-1 block w-full rounded border p-2 text-gray-900"
+            />
+          </div>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium">
-          Confirm Password
-        </label>
-        <input
-          id="password"
-          type="password"
-          required
-          value={formData.confirmPassword}
-          onChange={(e) =>
-            setFormData({ ...formData, confirmPassword: e.target.value })
-          }
-          className="mt-1 block w-full rounded border p-2"
-        />
-      </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-900"
+            >
+              Email
+            </label>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? "Creating account..." : "Sign Up"}
-      </button>
-    </form>
+            <input
+              id="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="mt-1 block w-full rounded border p-2 text-gray-900"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-900"
+            >
+              Password
+            </label>
+
+            <input
+              id="password"
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="mt-1 block w-full rounded border p-2 text-gray-900"
+            />
+
+            <p className="text-xs text-gray-500 mt-1">
+              Min 8 characters, with uppercase, lowercase, number, and special
+              character
+            </p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirm-password"
+              className="block text-sm font-medium text-gray-900"
+            >
+              Confirm Password
+            </label>
+
+            <input
+              id="confirm-password"
+              type="password"
+              required
+              value={formData.confirmPassword}
+              onChange={(e) =>
+                setFormData({ ...formData, confirmPassword: e.target.value })
+              }
+              className="mt-1 block w-full rounded border p-2 text-gray-900"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          >
+            {loading ? "Creating account..." : "Sign Up"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

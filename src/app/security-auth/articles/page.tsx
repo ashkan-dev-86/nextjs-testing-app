@@ -1,5 +1,3 @@
-"use client";
-
 import { fetchArticles } from "./articles.repository";
 import { IArticleGet } from "./article.get-model";
 import { useEffect, useState } from "react";

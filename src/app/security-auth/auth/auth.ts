@@ -2,12 +2,12 @@ import { DefaultSession, NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { AuthErrors } from "../enums/auth-errors.enum";
-import prisma from "@/lib/db";
 import { logger } from "../log/logger";
 import { Role } from '../enums/roles';
 import { compare, hash } from "bcryptjs";
 import { loginSchema, registerSchema } from '../validations/auth';
 import { ICreateUserResult, IRegisterUser } from "../models/register-user.model";
+import { fetchExistingUser, registerNewUser } from "../repositories/user.repository";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -187,9 +187,7 @@ async function authenticateUser(credentials: Record<"email" | "password", string
 
 export async function createUser(user: IRegisterUser): Promise<ICreateUserResult> {
     const validatedData = registerSchema.parse(user);
-    const existingUser = await prisma.user.findUnique({
-        where: { email: validatedData.email.toLowerCase() },
-    });
+    const existingUser = await fetchExistingUser(validatedData.email);
 
     if (!!existingUser) {
         logger.logAuth('register', false, { email: validatedData.email });
@@ -201,17 +199,13 @@ export async function createUser(user: IRegisterUser): Promise<ICreateUserResult
     }
 
     const hashedPassword = await hash(validatedData.password, 10);
-    const newUser = await prisma.user.create({
-        data: {
-            email: validatedData.email.toLowerCase(),
-            name: validatedData.name,
-            password: hashedPassword,
-            role: user.role || Role.USER
-        }
+    const newUser = await registerNewUser({
+        email: validatedData.email.toLowerCase(),
+        name: validatedData.name,
+        password: hashedPassword,
+        role: user.role || Role.USER
     });
-
-    logger.logAuth('register', true, { email: validatedData.email });
-
+    
     return {
         success: true,
         user: {
@@ -267,7 +261,7 @@ async function logLoginAttempt(
 }
 
 async function getUserByEmail(email: string): Promise<User> {
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user: User = await fetchExistingUser(email);
 
     return {
         id: user?.id,

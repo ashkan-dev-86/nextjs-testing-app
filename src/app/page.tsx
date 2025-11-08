@@ -6,6 +6,7 @@ import Sidebar from "./components/sidebar/sidebar";
 import Dashboard from "./components/dashboard";
 import Posts from "./prisma-db/posts/page";
 import LoginForm from "./security-auth/auth/login/page";
+import RegisterForm from "./security-auth/auth/registration/page";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
             { path: "/articles", component: Article },
             { path: "/posts", component: Posts },
             { path: "/login", component: LoginForm },
+            { path: "/signup", component: RegisterForm },
           ]}
         />
       </main>

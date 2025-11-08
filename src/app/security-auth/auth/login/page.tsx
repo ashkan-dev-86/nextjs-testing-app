@@ -1,13 +1,13 @@
 "use client";
+
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   credentialsSignIn,
   oauthSignIn,
 } from "../../repositories/signin.repository";
 import { SignInResponse } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import Link from "next/link";
+import { useSkipLocationRouter } from "@/contexts/router.context";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,10 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const navigate = useSkipLocationRouter();
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,7 +34,6 @@ export default function LoginForm() {
 
     if (result?.ok) {
       // Authentication successful
-      router.push("/article");
     }
   };
 
@@ -191,15 +193,13 @@ export default function LoginForm() {
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/security-auth/auth/registration">
             <button
               type="button"
               className="text-indigo-600 hover:text-indigo-700 font-medium"
-              onClick={() => alert("Sign up clicked")}
+              onClick={() => handleNavigation("/signup")}
             >
               Sign up
             </button>
-          </Link>
         </p>
       </div>
     </div>

@@ -72,6 +72,11 @@ export const authOptions: NextAuthOptions = {
     ],
 
     callbacks: {
+        async redirect({ url, baseUrl }) {
+            // Return the baseUrl to prevent any automatic redirects
+            // Your custom navigation will handle all routing
+            return baseUrl;
+        },
         async jwt({ token, user, trigger, session }) {
             // Initial sign in
             if (user) {
@@ -112,8 +117,8 @@ export const authOptions: NextAuthOptions = {
     },
 
     pages: {
-        signIn: "/auth/signin",
-        error: "/auth/error",
+        signIn: '/',
+        error: undefined,
     },
 
     session: {
@@ -205,7 +210,7 @@ export async function createUser(user: IRegisterUser): Promise<ICreateUserResult
         password: hashedPassword,
         role: user.role || Role.USER
     });
-    
+
     return {
         success: true,
         user: {
@@ -265,7 +270,7 @@ async function getUserByEmail(email: string): Promise<User> {
 
     return {
         id: user?.id,
-        role: !!user ? Role[user.role].toString() : '',
+        role: !!user ? user.role : Role.USER,
         email: user?.email,
         password: user?.password,
         name: user?.name,

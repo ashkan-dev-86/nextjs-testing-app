@@ -8,6 +8,8 @@ import {
 import { SignInResponse } from "next-auth/react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useSkipLocationRouter } from "@/contexts/router.context";
+import { AuthErrors } from "../../enums/auth-errors.enum";
+import { Screen } from "@/app/enums/screens.enum";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,9 +18,6 @@ export default function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useSkipLocationRouter();
-  const handleNavigation = (path: string) => {
-    navigate(path);
-  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,6 +33,14 @@ export default function LoginForm() {
 
     if (result?.ok) {
       // Authentication successful
+      navigate(Screen.Articles);
+
+      return;
+    }
+
+    if (result?.error) {
+      // Authentication failed
+      throw new Error(result.error || AuthErrors.INVALID_EMAIL_PASSWORD);
     }
   };
 
@@ -193,13 +200,13 @@ export default function LoginForm() {
 
         <p className="text-center text-sm text-gray-600 mt-6">
           Don&apos;t have an account?{" "}
-            <button
-              type="button"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-              onClick={() => handleNavigation("/signup")}
-            >
-              Sign up
-            </button>
+          <button
+            type="button"
+            className="text-indigo-600 hover:text-indigo-700 font-medium"
+            onClick={() => navigate("/signup")}
+          >
+            Sign up
+          </button>
         </p>
       </div>
     </div>

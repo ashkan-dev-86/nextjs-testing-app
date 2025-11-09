@@ -1,9 +1,19 @@
+'use client';
+
 import { fetchArticles } from "./articles.repository";
 import { IArticleGet } from "./article.get-model";
 import { useEffect, useState } from "react";
+import { useSkipLocationRouter } from "@/contexts/router.context";
+import { useSession } from "next-auth/react";
 
 export default function Article() {
   const [data, setData] = useState<IArticleGet[] | null>(null);
+  const navigate = useSkipLocationRouter();
+  const { data: session } = useSession();
+
+  if (!session) {
+    navigate("/login");
+  }
 
   useEffect(() => {
     const loadData = async () => {
@@ -19,6 +29,12 @@ export default function Article() {
 
     loadData();
   }, []);
+
+  if (!session) {
+    navigate("/login");
+
+    return;
+  }
 
   return (
     <main className="flex-1 flex flex-col justify-center items-center max-w-[800px] mx-auto px-10 text-center">

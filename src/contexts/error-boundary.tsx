@@ -47,7 +47,8 @@ export const ErrorProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Handle uncaught errors
     const handleError = (event: ErrorEvent) => {
-      throwError(new Error(event.message));
+      throwError(new Error(event.type.replace("Error: ", "")));
+
       // Prevent the default browser behavior
       event.preventDefault();
     };

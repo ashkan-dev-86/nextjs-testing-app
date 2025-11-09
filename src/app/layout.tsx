@@ -5,6 +5,7 @@ import "./layout.css";
 import { ToastProvider } from "@/contexts/toast.context";
 import { ErrorProvider } from "@/contexts/error-boundary";
 import { InternalRouterProvider } from "@/contexts/router.context";
+import SessionProviders from "./security-auth/components/session-provider/session-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,7 +38,7 @@ export default function RootLayout({
         <ToastProvider>
           <ErrorProvider>
             <InternalRouterProvider initialPath="/">
-              {children}
+              <SessionProviders>{children}</SessionProviders>
             </InternalRouterProvider>
           </ErrorProvider>
         </ToastProvider>
